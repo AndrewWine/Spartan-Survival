@@ -10,11 +10,23 @@ public class EnemyBulletScript : MonoBehaviour
     public float force;
     private float timer;
 
+    private BulletManager bulletManager; 
+
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        player = GameObject.FindGameObjectWithTag("Player");
+        AddComponent(); 
+        CheckPlayer();
+    }
 
+    void Update()
+    {
+        CheckRealTime();
+        CheckBulletDistance();
+        CheckBullet();
+    }
+
+    void CheckPlayer()
+    {
         if (player != null)
         {
             Vector3 direction = player.transform.position - transform.position;
@@ -23,30 +35,51 @@ public class EnemyBulletScript : MonoBehaviour
             float rot = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(0, 0, rot);
         }
-        else
-        {
-            Debug.LogError("Player not found");
-        }
+        else Debug.LogError("Player not found");
+        
+    }
+    
+    void CheckBullet()
+    {
+        if (bulletManager == null) bulletManager = FindObjectOfType<BulletManager>();
+    }
+    void AddComponent()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        player = GameObject.FindGameObjectWithTag("Player");
     }
 
-    void Update()
+    void CheckBulletDistance()
+    {
+       if (timer >= 7)
+        {
+            ReturnToPool();
+        }
+    }
+    void CheckRealTime()
     {
         timer += Time.deltaTime;
-        if (timer >= 7)
-        {
-            Destroy(gameObject);
-        }
     }
 
     void OnTriggerEnter2D(Collider2D other)
-    {PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
+    {
         if (other.CompareTag("Player"))
         {
-           playerHealth.TakeDamage(damage);
-           Destroy(gameObject);
-            
+            PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
+            playerHealth.TakeDamage(damage);
+            ReturnToPool();
+        }
+    }
 
-            // Destroy the bullet after hitting the player
+    private void ReturnToPool()
+    {
+        if (bulletManager != null)
+        {
+            bulletManager.ReturnBullet(this);
+        }
+        else
+        {
+            Destroy(gameObject);
         }
     }
 }

@@ -12,11 +12,19 @@ public class SwordCard : MonoBehaviour
 
     private void Start()
     {
-        button = GetComponent<Button>();
-        button.onClick.AddListener(OnButtonClicked);
-        damage = GameObject.Find("SwordHitbox").GetComponent<SwordAttack>();
+        AddComponent();
+        CheckButton();
     }
+      void CheckButton()
+    {
+        button.onClick.AddListener(OnButtonClicked);
 
+    }
+    void AddComponent()
+    {
+        damage = GameObject.Find("SwordHitbox").GetComponent<SwordAttack>();
+        button = GetComponent<Button>();
+    }
     public void OnButtonClicked()
     {
         IncreaseDamage();

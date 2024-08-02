@@ -2,28 +2,36 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System;
 
 public class ExpHandle : MonoBehaviour
 {
-    [SerializeField] private GameObject Card;
+    [SerializeField] protected GameObject Card;
 
-    public int MaxExp = 100;  // Biến public
-    public int currentExp = 0;  // Biến public
-    public int surplus;
+    [SerializeField] protected float MaxExp = 100;  // Biến public
+    public float GetMaxExp { get { return MaxExp; } set { MaxExp = value; } }
+    [SerializeField] protected float currentExp = 0;  // Biến public
+    public float GetCurrentExp { get { return currentExp; } set { currentExp = value; } }
+    [SerializeField] protected float surplus;
+    public float GetSurplus { get { return surplus; } set { surplus = value; } }
     public Image expBar;
     public GameObject ExpBar;
 
-    private void Awake()
+    private void Start()
     {   
+        CheckDataLoad();
+    }
 
+    private void CheckDataLoad()
+    {
         if (PlayerPrefs.HasKey("PlayerExp"))
         {
-            currentExp = PlayerPrefs.GetInt("PlayerExp", currentExp); // Nếu không có dữ liệu lưu, sử dụng giá trị tối đa làm mặc định
+            currentExp = PlayerPrefs.GetFloat("PlayerExp", GetCurrentExp); // Nếu không có dữ liệu lưu, sử dụng giá trị tối đa làm mặc định
         }
 
          if (PlayerPrefs.HasKey("PlayerSurplusExp"))
         {
-            surplus = PlayerPrefs.GetInt("PlayerSurplusExp", surplus); // Nếu không có dữ liệu lưu, sử dụng giá trị tối đa làm mặc định
+            surplus = PlayerPrefs.GetFloat("PlayerSurplusExp", GetSurplus); // Nếu không có dữ liệu lưu, sử dụng giá trị tối đa làm mặc định
         }
 
         if (Card == null)
@@ -51,9 +59,9 @@ public class ExpHandle : MonoBehaviour
 
     public void CheckLevelUp()
     {
-        while (currentExp >= MaxExp)
+        while (GetCurrentExp >= GetMaxExp)
         {
-            surplus = currentExp - MaxExp;
+            GetSurplus = GetCurrentExp - GetMaxExp;  // Giữ kiểu float
             expBar.fillAmount = 0;  // Reset thanh exp
             currentExp = surplus;
             Debug.Log("Leveled Up! Current EXP: " + currentExp);

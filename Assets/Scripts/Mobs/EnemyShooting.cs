@@ -11,11 +11,15 @@ public class EnemyShooting : MonoBehaviour
     private float timer;
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player");
+        AddComponent();
     }
 
     // Update is called once per frame
     void Update()
+    {
+        CheckDistance(); 
+    }
+    void CheckDistance()
     {
         float distance = Vector2.Distance(transform.position, player.transform.position);   
         Debug.Log(distance);
@@ -28,9 +32,11 @@ public class EnemyShooting : MonoBehaviour
                     timer = 0;
                 }
         }
-      
     }
-
+    void AddComponent()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+    }   
     void Shoot()
     {
         Instantiate(bulletPrefab, bulletSpawn.position, Quaternion.identity);

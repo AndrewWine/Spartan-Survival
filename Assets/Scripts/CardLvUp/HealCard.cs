@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,16 +12,22 @@ public class HealCard : MonoBehaviour
 
     private void Start()
     {
-        button = GetComponent<Button>();
-        button.onClick.AddListener(OnButtonClicked);
-        playerHealth = GameObject.Find("Player").GetComponent<PlayerHealth>();
-
-        if (Card == null)
-        {
-            Debug.LogWarning("Card is not assigned in the Inspector.");
-        }
+        AddComponent();
+        CheckButton();
     }
 
+    void CheckButton()
+    {
+                button.onClick.AddListener(OnButtonClicked);
+
+    }
+
+    
+    void AddComponent()
+    {
+        playerHealth = GameObject.Find("Player").GetComponent<PlayerHealth>();
+        button = GetComponent<Button>();
+    }
     public void OnButtonClicked()
     {
         HealPlayer();
@@ -32,8 +39,8 @@ public class HealCard : MonoBehaviour
         if (playerHealth != null)
         {
             playerHealth.Heal(5);
-            playerHealth.maxHealth += 5;
-            Debug.Log("Max health increased to: " + playerHealth.maxHealth);
+            playerHealth.GetMaxHealth += 5;
+            Debug.Log("Max health increased to: " + playerHealth.GetMaxHealth);
         }
         else
         {

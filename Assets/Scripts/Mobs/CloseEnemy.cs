@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 
 public class Enemy : MonoBehaviour
-{   
+{
     public PlayerHealth checkIsDead;
     Animator animator;
     [SerializeField] private int expValue = 10;
@@ -15,22 +15,74 @@ public class Enemy : MonoBehaviour
     public Collider2D swordCollider;
     public Transform target;
     public GameObject ExpDrop;  // Prefab của đối tượng muốn drop
+    public GameObject healthText; // Prefab hiển thị điểm số
+    public float initialHealth = 5;
 
-    public GameObject healthText;
     // Distance
     private float separation;
-    //private float maxSeparation = 2;
 
     // Attributes
-    public float health = 7;
-    public float speed = 1;
-    public float damage = 2;
-    private float attackCooldown = 1.5f; // Cooldown time between attacks
-    private float lastAttackTime;
+    [SerializeField] protected float health = 5;
+    public float Gethealth { get => health; }
+    [SerializeField] protected float speed = 1;
+    public float GetSpeed { get => speed; }
+    [SerializeField] protected float damage = 2;
+    public float GetDamage { get => damage; }
+    [SerializeField] protected float attackCooldown = 5.5f; // Cooldown time between attacks
+    public float GetAttackCooldown { get => attackCooldown; }
+    [SerializeField] protected float lastAttackTime;
+    public float GetLastAttackTime { get => lastAttackTime; set => lastAttackTime = value; }
     public event Action OnDisabled;
-
     private IKnockBack knockBackHandler;
     private ObjectPool<Enemy> pool;
+
+    private void Start()
+    {
+        AddComponent();
+        CheckPosition();
+        ChecComponent();
+        FindTarget();
+    }
+
+    private void Update()
+    {
+        MobMovement();
+        MobAttack();     
+    }
+
+    void AddComponent()
+    {
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        knockBackHandler = GetComponent<EnemyKnockBack>();
+    }
+
+    void CheckPosition()
+    {
+        rightAttackOffset = transform.localPosition;
+    }
+
+    void ChecComponent()
+    {
+        // Kiểm tra xem các thành phần đã được gán chưa
+        if (animator == null) Debug.LogError("Animator is not assigned.");
+        if (spriteRenderer == null) Debug.LogError("SpriteRenderer is not assigned.");
+        if (knockBackHandler == null) Debug.LogError("KnockBackHandler is not assigned.");
+    }
+
+    void FindTarget()
+    {
+        if (expHandle == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                expHandle = player.GetComponent<ExpHandle>();
+                if (expHandle == null) Debug.LogError("ExpHandle component not found on the Player.");
+            }
+        }
+    }
+
     public int GetExpValue()
     {
         return expValue;
@@ -41,12 +93,9 @@ public class Enemy : MonoBehaviour
         set
         {
             health = value;
-            
             if (health <= 0)
             {
                 Defeated();
-                
-
             }
         }
         get
@@ -59,81 +108,58 @@ public class Enemy : MonoBehaviour
     {
         this.pool = pool;
         this.target = target;
-        health = 30;
-        speed = 1;
-        damage = 1;
+        ResetHealth();
+
     }
 
-     private void OnDisable()
+    private void ResetHealth()
+    {
+        health = initialHealth;
+    }
+    private void OnDisable()
     {
         OnDisabled?.Invoke();
     }
 
-
-    private void Start()
-{
-    animator = GetComponent<Animator>();
-    spriteRenderer = GetComponent<SpriteRenderer>();
-    rightAttackOffset = transform.localPosition;
-    knockBackHandler = GetComponent<EnemyKnockBack>();
-
-    // Automatically find the player as the target
-    if (target == null)
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            target = player.transform;
-        }
-    }
-
-    // Find ExpHandle component on the player
-    if (expHandle == null)
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            expHandle = player.GetComponent<ExpHandle>();
-            if (expHandle == null)
-            {
-                Debug.LogError("ExpHandle component not found on the Player.");
-            }
-        }
-    }
-}
-
-
-     public void OnHit(float damage)
+    public void OnHit(float damage)
     {
         Health -= damage;
         animator.SetTrigger("beingHit");
 
         // Instantiate health text and display
-        TMP_Text textTransform = Instantiate(healthText).GetComponent<TMP_Text>();
-        textTransform.transform.position = Camera.main.WorldToScreenPoint(gameObject.transform.position);
-        Canvas canvas = GameObject.FindObjectOfType<Canvas>();
-        textTransform.transform.SetParent(canvas.transform);
-        textTransform.text = damage.ToString();
+        if (healthText != null)
+        {
+            TMP_Text textTransform = Instantiate(healthText).GetComponent<TMP_Text>();
+            textTransform.transform.position = Camera.main.WorldToScreenPoint(transform.position);
+            Canvas canvas = GameObject.FindObjectOfType<Canvas>();
+            textTransform.transform.SetParent(canvas.transform);
+            textTransform.text = damage.ToString();
+        }
+        else
+        {
+            Debug.LogWarning("healthText prefab is not assigned.");
+        }
 
-        knockBackHandler.KnockBack(transform, target, 1f);
+        if (knockBackHandler != null)
+        {
+            knockBackHandler.KnockBack(transform, target, 1f);
+        }
+        else
+        {
+            Debug.LogWarning("KnockBackHandler is not assigned.");
+        }
     }
 
-    // Other methods omitted for brevity
-
-    void Update()
+    void MobMovement()
     {
-        #region Movement
-        if (target != null )
+        if (target != null)
         {
-            // Calculate the distance between enemy and player
             separation = Vector2.Distance(transform.position, target.position);
 
-            // If the distance is less than or equal to maxSeparation, move the enemy towards the player
-            if ( separation > 0.2f && health > 0 )
+            if (separation > 0.2f && health > 0)
             {
                 Vector2 direction = target.position - transform.position;
 
-                // Flip the sprite based on the movement direction
                 if (direction.x < 0)
                 {
                     spriteRenderer.flipX = true;
@@ -145,7 +171,6 @@ public class Enemy : MonoBehaviour
                     rightAttackOffset = new Vector2(Mathf.Abs(rightAttackOffset.x), rightAttackOffset.y);
                 }
 
-                // Move the enemy towards the target
                 transform.position = Vector2.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
                 animator.SetBool("isMoving", true);
             }
@@ -153,16 +178,15 @@ public class Enemy : MonoBehaviour
             {
                 animator.SetBool("isMoving", false);
             }
-            #endregion
+        }
+    }
 
-            #region Attack
-            // Check if the enemy is close enough to attack
-            if (separation < 0.2f && health > 0 && Time.time >= lastAttackTime + attackCooldown)
-            {
-                Attack();
-                lastAttackTime = Time.time;
-            }
-            #endregion
+    void MobAttack()
+    {
+        if (separation < 0.2f && health > 0 && Time.time >= GetLastAttackTime + GetAttackCooldown)
+        {
+            Attack();
+            GetLastAttackTime = Time.time;
         }
     }
 
@@ -178,7 +202,7 @@ public class Enemy : MonoBehaviour
             }
         }
     }
-    
+
     public void OnBeingHitAnimationStart()
     {
         animator.SetBool("isMoving", false);
@@ -202,9 +226,8 @@ public class Enemy : MonoBehaviour
             Debug.LogError("ExpHandle is not assigned.");
         }
 
-        StartCoroutine(ReturnToPoolAfterDelay(5f));
+        StartCoroutine(ReturnToPoolAfterDelay(2f));
     }
-
 
     private IEnumerator ReturnToPoolAfterDelay(float delay)
     {

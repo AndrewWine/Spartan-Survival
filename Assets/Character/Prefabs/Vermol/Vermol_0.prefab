@@ -224,9 +224,12 @@ MonoBehaviour:
   bulletSpawn: {fileID: 2662505305648627567}
   expValue: 100
   expHandle: {fileID: 0}
-  health: 40
-  speed: 3
+  initialHealth: 20
+  health: 20
+  speed: 2
   damage: 2
+  attackCooldown: 5
+  lastAttackTime: 0
 --- !u!114 &1196811719169362324
 MonoBehaviour:
   m_ObjectHideFlags: 0

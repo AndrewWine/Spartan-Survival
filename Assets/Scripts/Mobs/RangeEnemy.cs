@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Scripting;
 using TMPro;
 using System;
+using System.Runtime.CompilerServices;
 
 public class RangeEnemy : MonoBehaviour
 {
@@ -22,20 +23,38 @@ public class RangeEnemy : MonoBehaviour
     [SerializeField] private int expValue = 10;
     public ExpHandle expHandle;
 
-
     // Distance
     private float separation;
-
+    public float initialHealth = 5;
     // Attributes
-     [SerializeField] public float health = 5;
-    public float speed = 1;
-    public float damage = 2;
-    private float attackCooldown = 3.5f; // Cooldown time between attacks
-    private float lastAttackTime;
+   [SerializeField] protected float health = 5;
+    public float Gethealth { get => health; set => health = value; }
+    [SerializeField] protected float speed = 1;
+    public float GetSpeed { get => speed; }
+    [SerializeField] protected float damage = 2;
+    public float GetDamage { get => damage; }
+    [SerializeField] protected float attackCooldown = 5.5f; // Cooldown time between attacks
+    public float GetAttackCooldown { get => attackCooldown; }
+    [SerializeField] protected float lastAttackTime;
+    public float GetLastAttackTime { get => lastAttackTime; set => lastAttackTime = value; }
     public event Action OnDisabled;
 
     private IKnockBack knockBackHandler;
     private ObjectPool<RangeEnemy> pool;
+
+    private void Start()
+    {
+        AddComponent();
+        CheckPosition();
+        ChecComponent();
+        FindTarget();
+    }
+
+    private void Update()
+    {
+        MobMovement();
+        MobAttack();     
+    }
 
      public int GetExpValue()
     {
@@ -62,61 +81,59 @@ public class RangeEnemy : MonoBehaviour
     {
         this.pool = pool;
         this.target = target;
-        health = 30;
-        speed = 1;
-        damage = 1;
+        ResetHealth();
+
+    }
+
+    private void ResetHealth()
+    {
+        health = initialHealth;
     }
 
     private void OnDisable()
     {
         OnDisabled?.Invoke();
     }
-
-    private void Start()
+    void AddComponent()
     {
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        rightAttackOffset = transform.localPosition;
-        knockBackHandler = GetComponent<EnemyKnockBack>();
+         knockBackHandler = GetComponent<EnemyKnockBack>();
+    }
 
-        // Kiểm tra xem các thành phần đã được gán chưa
-        if (animator == null)
-        {
-            Debug.LogError("Animator is not assigned.");
-        }
-        if (spriteRenderer == null)
-        {
-            Debug.LogError("SpriteRenderer is not assigned.");
-        }
-        if (knockBackHandler == null)
-        {
-            Debug.LogError("KnockBackHandler is not assigned.");
-        }
+    void ChecComponent()
+    {
+         // Kiểm tra xem các thành phần đã được gán chưa
+        if (animator == null) Debug.LogError("Animator is not assigned.");
+      
+        if (spriteRenderer == null) Debug.LogError("SpriteRenderer is not assigned.");
+        
+        if (knockBackHandler == null) Debug.LogError("KnockBackHandler is not assigned.");
+    }
 
-        // Automatically find the player as the target
+    void FindTarget()
+    {
         if (target == null)
         {
             player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null)
-            {
-                target = player.transform;
-            }
+            if (player != null) target = player.transform;
         }
 
-         if (expHandle == null)
+        if (expHandle == null)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
                 expHandle = player.GetComponent<ExpHandle>();
-                if (expHandle == null)
-                {
-                    Debug.LogError("ExpHandle component not found on the Player.");
-                }
+                if (expHandle == null) Debug.LogError("ExpHandle component not found on the Player.");
             }
         }
     }
-
+    void CheckPosition()
+    {
+        rightAttackOffset = transform.localPosition;
+    }
+    
      public void OnHit(float damage)
     {
         Health -= damage;
@@ -133,8 +150,7 @@ public class RangeEnemy : MonoBehaviour
     }
 
     // Other methods omitted for brevity
-
-    void Update()
+    void MobMovement()
     {
         #region Movement
         if (target != null)
@@ -142,7 +158,7 @@ public class RangeEnemy : MonoBehaviour
             // Calculate the distance between enemy and player
             separation = Vector2.Distance(transform.position, target.position);
 
-            if (separation > 3 && health > 0)
+            if (separation > 3 && Gethealth > 0)
             {
                 Vector2 direction = target.position - transform.position;
 
@@ -167,17 +183,23 @@ public class RangeEnemy : MonoBehaviour
                 animator.SetBool("isMoving", false);
             }
             #endregion
-
-            #region Attack
-            // Check if the enemy is close enough to attack
-            if ( health > 0 && Time.time >= lastAttackTime + attackCooldown)
-            {
-                Attack();
-                lastAttackTime = Time.time;
-            }
-            #endregion
         }
     }
+  
+ 
+
+    void MobAttack()
+    {
+         #region Attack
+            // Check if the enemy is close enough to attack
+            if ( health > 0 && Time.time >= GetLastAttackTime + GetAttackCooldown )
+            {
+                Attack();
+                GetLastAttackTime = Time.time;
+            }
+            #endregion
+    }
+    
 
     private void Attack()
     {
@@ -201,6 +223,7 @@ public class RangeEnemy : MonoBehaviour
 
     public void Defeated()
     {
+        
         animator.SetTrigger("Defeated");
 
         if (expHandle != null)
@@ -212,7 +235,7 @@ public class RangeEnemy : MonoBehaviour
             Debug.LogError("ExpHandle is not assigned.");
         }
 
-        StartCoroutine(ReturnToPoolAfterDelay(5f));
+        StartCoroutine(ReturnToPoolAfterDelay(2f));
     }
 
     private IEnumerator ReturnToPoolAfterDelay(float delay)

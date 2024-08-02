@@ -269,9 +269,12 @@ MonoBehaviour:
   target: {fileID: 0}
   ExpDrop: {fileID: 0}
   healthText: {fileID: 2290943433649174800, guid: 48e46316c322cda43abe4a4116c31474, type: 3}
-  health: 7
+  initialHealth: 15
+  health: 15
   speed: 1
   damage: 2
+  attackCooldown: 1.5
+  lastAttackTime: 0
 --- !u!114 &5592763093257159159
 MonoBehaviour:
   m_ObjectHideFlags: 0

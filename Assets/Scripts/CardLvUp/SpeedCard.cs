@@ -9,14 +9,25 @@ public class SpeedCard : MonoBehaviour
     public PlayerActions playerActions;
     [SerializeField] private GameObject Card;
 
-    
-    private void Start()
+
+     private void Start()
     {
-        button = GetComponent<Button>();
-        button.onClick.AddListener(OnButtonClicked);
-        playerActions = GameObject.Find("Player").GetComponent<PlayerActions>();
+        AddComponent();
+        CheckButton();
     }
 
+    void CheckButton()
+    {
+        button.onClick.AddListener(OnButtonClicked);
+
+    }
+
+    
+    void AddComponent()
+    {
+        playerActions = GameObject.Find("Player").GetComponent<PlayerActions>();
+        button = GetComponent<Button>();
+    }
     public void OnButtonClicked()
     {
         IncreaseSpeed();

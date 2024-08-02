@@ -195,15 +195,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   checkIsDead: {fileID: 0}
-  expValue: 100
+  expValue: 50
   expHandle: {fileID: 0}
   swordCollider: {fileID: 0}
   target: {fileID: 0}
   ExpDrop: {fileID: 0}
   healthText: {fileID: 2290943433649174800, guid: 48e46316c322cda43abe4a4116c31474, type: 3}
-  health: 30
-  speed: 2.5
+  initialHealth: 20
+  health: 20
+  speed: 2.3
   damage: 2
+  attackCooldown: 1.3
+  lastAttackTime: 0
 --- !u!114 &5986813817086289421
 MonoBehaviour:
   m_ObjectHideFlags: 0

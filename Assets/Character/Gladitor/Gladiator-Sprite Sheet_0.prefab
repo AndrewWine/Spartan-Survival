@@ -46,6 +46,7 @@ GameObject:
   - component: {fileID: -8782972998519767070}
   - component: {fileID: -5928432456026153997}
   - component: {fileID: 1915912757570514620}
+  - component: {fileID: 434859904689332226}
   m_Layer: 0
   m_Name: Gladiator-Sprite Sheet_0
   m_TagString: Enemy
@@ -234,6 +235,24 @@ MonoBehaviour:
   healthText: {fileID: 2290943433649174800, guid: 48e46316c322cda43abe4a4116c31474, type: 3}
   bulletPrefab: {fileID: 1239661925283717841, guid: c5c6b96b074246944bd5231dff421d42, type: 3}
   bulletSpawn: {fileID: 3774322712465112465}
+  expValue: 10
+  expHandle: {fileID: 0}
   health: 5
   speed: 1
   damage: 2
+  attackCooldown: 5.5
+  lastAttackTime: 0
+--- !u!114 &434859904689332226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4371427041309473443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cceb31f2a681f540a59a905aa68d9c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletPrefab: {fileID: 3821625379062947694, guid: c5c6b96b074246944bd5231dff421d42, type: 3}
+  initialPoolSize: 10

@@ -6,13 +6,13 @@ public class SwordAttack : MonoBehaviour
 {
     Animator animator;
     public Collider2D swordCollider;
-    public float damage = 5;
-  
+    [SerializeField] protected float damage = 5;
+    public float GetDamage { get { return damage; } set { damage = value; } }
     Vector2 rightAttackOffset;
     public void IncreaseDamage(int amount)
     {
-        damage += amount;
-        Debug.Log("New damage: " + damage);
+        GetDamage += amount;
+        Debug.Log("New damage: " + GetDamage);
     }
 
     private void Start() {

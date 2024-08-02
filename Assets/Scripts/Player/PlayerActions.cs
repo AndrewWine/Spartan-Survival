@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,8 +8,6 @@ public class PlayerActions : MonoBehaviour
 {
     Vector2 movementInput;
     SpriteRenderer spriteRenderer;
-    Rigidbody2D rb;
-    Animator animator;
     List<RaycastHit2D> castCollisions = new List<RaycastHit2D>();
     Collider2D swordCollider;
     public GameObject swordHitBox;
@@ -18,66 +17,47 @@ public class PlayerActions : MonoBehaviour
 
     // Các thuộc tính
     [SerializeField] public float moveSpeed = 1f;
+    public float GetmoveSpeed { get { return moveSpeed; } set { moveSpeed = value; } }
     bool canMove = true;
     bool isDashing;
     bool CanDash;
     // Các thuộc tính Dash
-    [SerializeField] private float dashSpeed = 0.002f; // Tốc độ khi dash
-    [SerializeField] private float dashDuration = 0.2f; // Thời gian dash
-    [SerializeField] private float dashCooldown = 1f; // Thời gian hồi chiêu giữa các lần dash
-    private float dashTime;
-    private float lastDashTime;
-    private Vector2 dashDirection;
+     [SerializeField] protected float dashSpeed = 0.002f; // Tốc độ khi dash
+    [SerializeField] protected  float dashDuration = 0.2f; // Thời gian dash
+    [SerializeField] protected  float dashCooldown = 1f; // Thời gian hồi chiêu giữa các lần dash
+     [SerializeField] protected Vector2 dashDirection;
+
+    public Vector2 DashDirection {get { return dashDirection; } set {  dashDirection = value; }}
     Vector2 moveDirection;
+    
+    Rigidbody2D rb;
+    Animator animator;
     Vector2 mousePosition;
 
     void Start()
     {
-        CanDash = true;
-        rb = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        if (PlayerPrefs.HasKey("PlayerAction"))
-        {
-            moveSpeed = PlayerPrefs.GetFloat("PlayerAction", moveSpeed); // Nếu không có dữ liệu lưu, sử dụng giá trị mặc định
-        }
-
-        if (swordHitBox != null)
-        {
-            swordCollider = swordHitBox.GetComponent<Collider2D>();
-        }
-        if (swordAttack == null)
-        {
-            Debug.LogError("Component SwordAttack chưa được gán trong Inspector");
-        }
+        CheckBool();
+        CheckDataLoad();
+        AddComponent();
     }
 
+    
     void Update()
     {
-        if (isDashing)
-        {
-            return;
-        }
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveY = Input.GetAxisRaw("Vertical");
-
-        // Kiểm tra điều kiện để dash
-        if (Input.GetKeyDown(KeyCode.Space) && CanDash)
-        {
-            StartCoroutine(Dash());
-        }
-
-        moveDirection = new Vector2(moveX, moveY).normalized;
-        mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        DashCondition();
+        CheckDashing();
     }
 
     void FixedUpdate()
     {
-        if (isDashing)
-        {
-            return;
-        }
-        if (canMove)
+        if (isDashing) return;
+        MoveCondition();
+    }
+
+
+    void MoveCondition()
+    {
+            if (canMove)
         {
             // Di chuyển bình thường
             if (movementInput != Vector2.zero)
@@ -101,8 +81,13 @@ public class PlayerActions : MonoBehaviour
                 animator.SetBool("isMoving", false);
             }
 
-            // Xoay hướng của sprite theo hướng di chuyển
-            if (movementInput.x < 0)
+            Flip();
+           
+        }
+    }
+    void Flip()
+    {
+         if (movementInput.x < 0)
             {
                 spriteRenderer.flipX = true;
             }
@@ -110,7 +95,45 @@ public class PlayerActions : MonoBehaviour
             {
                 spriteRenderer.flipX = false;
             }
-        }
+            // Xoay hướng của sprite theo hướng di chuyển
+    }
+
+    private void CheckDataLoad()
+    {
+         if (PlayerPrefs.HasKey("PlayerAction")) moveSpeed = PlayerPrefs.GetFloat("PlayerAction", moveSpeed); 
+         // Nếu không có dữ liệu lưu, sử dụng giá trị mặc định
+    }
+
+    void AddComponent()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
+    }
+    void CheckBool()
+    {
+        CanDash = true;
+    }
+
+    void CheckDashing()
+    {
+        if (isDashing) return;
+        float moveX = Input.GetAxisRaw("Horizontal");
+        float moveY = Input.GetAxisRaw("Vertical");
+        // Kiểm tra điều kiện để dash
+        if (Input.GetKeyDown(KeyCode.Space) && CanDash) StartCoroutine(Dash());
+        moveDirection = new Vector2(moveX, moveY).normalized;
+    }
+
+     private void DashCondition()
+    {
+        if (isDashing)return;
+        float moveX = Input.GetAxisRaw("Horizontal");
+        float moveY = Input.GetAxisRaw("Vertical");
+        if (Input.GetKeyDown(KeyCode.Space) && CanDash)  StartCoroutine(Dash());
+        moveDirection = new Vector2(moveX, moveY).normalized;
+        mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
     }
 
     private bool TryMove(Vector2 direction)

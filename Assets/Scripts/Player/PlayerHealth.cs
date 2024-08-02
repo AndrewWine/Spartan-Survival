@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,34 +9,26 @@ public class PlayerHealth : MonoBehaviour
     public Image healthBar;
     private Animator animator;
     private PlayerActions playerActions;
-    public float health = 20;
-    private bool isDead;
-    public float maxHealth = 20;
+    [SerializeField] protected float health = 20;
+    public float Gethealth { get { return health; } set { health = value; } }
+    [SerializeField] protected bool isDead;
+    public bool GetIsDead { get { return isDead; }  }
+    [SerializeField] protected float maxHealth = 20;
+    public float GetMaxHealth { get { return maxHealth; } set { maxHealth = value; } }
 
    
-private void Start()
-{
-    animator = GetComponent<Animator>();
-    playerActions = GetComponent<PlayerActions>();
-    
-    // Tải dữ liệu máu khi bắt đầu
-    if (PlayerPrefs.HasKey("PlayerHealth"))
+    private void Start()
     {
-        health = PlayerPrefs.GetFloat("PlayerHealth", health); // Nếu không có dữ liệu lưu, sử dụng giá trị mặc định
+        AddedComponent();
+        CheckDataSave();
     }
-
-    if (PlayerPrefs.HasKey("PlayerMaxHealth"))
-    {
-        maxHealth = PlayerPrefs.GetFloat("PlayerMaxHealth", maxHealth); // Nếu không có dữ liệu lưu, sử dụng giá trị mặc định
-    }
-
-    Debug.Log("Player health: " + health);
-    healthBar.fillAmount = health / maxHealth;
-}
-
-
 
     void Update()
+    {
+        CheckGameOverScreen();
+    }
+
+    private void CheckGameOverScreen()
     {
         if (gameManager != null && !isDead)
         {
@@ -49,6 +42,23 @@ private void Start()
         }
     }
 
+    private void CheckDataSave()
+    {
+        // Tải dữ liệu máu khi bắt đầu
+
+        if (PlayerPrefs.HasKey("PlayerMaxHealth"))
+        {
+            maxHealth = PlayerPrefs.GetFloat("PlayerMaxHealth", GetMaxHealth); // Nếu không có dữ liệu lưu, sử dụng giá trị mặc định
+        }
+        Gethealth = GetMaxHealth;
+        Debug.Log("Player health: " + health);
+        healthBar.fillAmount = Gethealth / GetMaxHealth;
+    }
+     private void AddedComponent()
+    {
+        animator = GetComponent<Animator>();
+        playerActions = GetComponent<PlayerActions>();
+    }
     private void StartBeing_Hit()
     {
         animator.SetBool("isMoving", false);
